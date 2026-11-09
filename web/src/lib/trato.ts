@@ -121,7 +121,13 @@ const CONTRACT_ERRORS: Record<number, string> = {
 };
 
 export function friendlyError(e: unknown): string {
-  const msg = e instanceof Error ? e.message : String(e);
+  // Stellar Wallets Kit lanza objetos { code, message }, no instancias de Error.
+  const msg =
+    e instanceof Error
+      ? e.message
+      : typeof e === "object" && e && "message" in e
+        ? String((e as { message: unknown }).message)
+        : String(e);
   const m = msg.match(/Error\(Contract, #(\d+)\)/);
   if (m) return CONTRACT_ERRORS[Number(m[1])] ?? msg;
   if (/balance|underfunded|resulting balance/i.test(msg)) return "Saldo insuficiente del token.";
