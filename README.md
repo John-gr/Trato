@@ -40,7 +40,7 @@ Trato es el escrow sin plataforma intermedia: un link, un contrato inteligente y
 
 | | |
 |---|---|
-| **Contrato** | `CONTRACT_ID_PLACEHOLDER` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CONTRACT_ID_PLACEHOLDER)) |
+| **Contrato** | `CDC7UJLZ5ERDMJQB3GQUNEJOYO3CXVVYQHGFNWCBUOLCUT22T3CBJUZU` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CDC7UJLZ5ERDMJQB3GQUNEJOYO3CXVVYQHGFNWCBUOLCUT22T3CBJUZU)) |
 | **Red** | Stellar Testnet |
 | **App** | `APP_URL_PLACEHOLDER` |
 

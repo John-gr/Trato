@@ -1,6 +1,7 @@
 import { contract } from "@stellar/stellar-sdk";
 import { CONFIG } from "./config";
 import { signTx } from "./wallet";
+import { TRATO_SPEC } from "./spec";
 
 export type StatusTag = "Open" | "Funded" | "Delivered" | "Released" | "Refunded" | "Cancelled";
 
@@ -19,26 +20,21 @@ export type Deal = {
   created_at: bigint;
 };
 
-// El spec se descarga del contrato desplegado, así no hace falta generar bindings.
-let specCache: Promise<contract.Client> | null = null;
+// Spec del contrato incrustado (src/lib/spec.ts) para no descargar el wasm en cada carga.
+const SPEC = new contract.Spec(TRATO_SPEC);
+let readClient: contract.Client | null = null;
 
 async function getClient(publicKey?: string): Promise<contract.Client> {
-  if (!specCache) {
-    specCache = contract.Client.from({
-      contractId: CONFIG.contractId,
-      rpcUrl: CONFIG.rpcUrl,
-      networkPassphrase: CONFIG.networkPassphrase,
-    });
-  }
-  const base = await specCache;
-  if (!publicKey) return base;
-  return new contract.Client(base.spec, {
+  const base = {
     contractId: CONFIG.contractId,
     rpcUrl: CONFIG.rpcUrl,
     networkPassphrase: CONFIG.networkPassphrase,
-    publicKey,
-    signTransaction: signTx,
-  });
+  };
+  if (!publicKey) {
+    readClient ??= new contract.Client(SPEC, base);
+    return readClient;
+  }
+  return new contract.Client(SPEC, { ...base, publicKey, signTransaction: signTx });
 }
 
 // El cliente dinámico tipa los métodos como `any`; los envolvemos con tipos propios.
