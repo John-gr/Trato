@@ -132,6 +132,26 @@ VITE_XLM_ID=CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 
 ---
 
+### Deploy del frontend (Vercel)
+
+1. Importa el repo en Vercel → **Root Directory:** `web` (Vite se detecta solo).
+2. Agrega las variables `VITE_*` de arriba en *Environment Variables*.
+3. Deploy. `web/vercel.json` ya redirige todas las rutas a `index.html` para que funcionen los links `/t/<id>`.
+
+---
+
+## Verificado en testnet
+
+| Prueba | Tx |
+|---|---|
+| Deploy del contrato | [bf02e6…](https://stellar.expert/explorer/testnet/tx/bf02e681020c37fb7b5074d119bb7d6a6890271c396fdeda413368fbb755ef1a) |
+| Trato #0 fondeado (25 XLM bloqueados) | [1bf0c2…](https://stellar.expert/explorer/testnet/tx/1bf0c25107009c038ef141b2db879f6abee1882c3b3855e2e7ffe8d9a174087d) |
+| Trato #0 entregado | [a38027…](https://stellar.expert/explorer/testnet/tx/a38027d7ddc1a422060a71ecd48e7bd93aae4576b4cd33d25a69a941add4e209) |
+| Trato #0 liberado por el cliente | [f41ea6…](https://stellar.expert/explorer/testnet/tx/f41ea63bb20a690193bdccf5e9c3c357276807d0771663c793245149205b3abf) |
+| Trato #1 cobrado por el freelancer tras timeout (`by_timeout: true`) | [f57f95…](https://stellar.expert/explorer/testnet/tx/f57f95adabc0f6dbe4c2b4f01e6bf330b0cb1af1b4181558267ee68bc83204a2) |
+
+---
+
 ## Roadmap
 
 - Disputas con árbitro elegido por ambas partes.
