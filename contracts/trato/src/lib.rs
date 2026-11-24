@@ -14,9 +14,13 @@ use soroban_sdk::{
     Address, Env, String,
 };
 
+mod reputation;
+
+pub use reputation::Reputation;
+
 const DAY_IN_LEDGERS: u32 = 17_280;
-const TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
-const TTL_EXTEND_TO: u32 = 120 * DAY_IN_LEDGERS;
+pub(crate) const TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
+pub(crate) const TTL_EXTEND_TO: u32 = 120 * DAY_IN_LEDGERS;
 
 const MIN_REVIEW_SECS: u64 = 60;
 const MAX_REVIEW_SECS: u64 = 60 * 60 * 24 * 30;
@@ -74,9 +78,11 @@ pub struct Deal {
 
 #[contracttype]
 #[derive(Clone)]
-enum DataKey {
+pub(crate) enum DataKey {
     Count,
     Deal(u64),
+    /// Reputación por dirección de freelancer.
+    Rep(Address),
 }
 
 // ---------- Eventos ----------
@@ -283,6 +289,7 @@ impl Trato {
         require_status(&env, &deal, Status::Delivered);
 
         pay(&env, &deal, &deal.freelancer);
+        reputation::record_completed(&env, &deal.freelancer, deal.amount);
         deal.status = Status::Released;
         save(&env, &deal);
         DealReleased {
@@ -302,6 +309,7 @@ impl Trato {
         }
 
         pay(&env, &deal, &deal.freelancer);
+        reputation::record_completed(&env, &deal.freelancer, deal.amount);
         deal.status = Status::Released;
         save(&env, &deal);
         DealReleased {
@@ -322,6 +330,7 @@ impl Trato {
         }
 
         pay(&env, &deal, &client);
+        reputation::record_refunded(&env, &deal.freelancer);
         deal.status = Status::Refunded;
         save(&env, &deal);
         DealRefunded { id }.publish(&env);
@@ -343,6 +352,11 @@ impl Trato {
 
     pub fn count(env: Env) -> u64 {
         env.storage().instance().get(&DataKey::Count).unwrap_or(0)
+    }
+
+    /// Reputación pública de un freelancer (tratos completados, reembolsados y disputados).
+    pub fn reputation(env: Env, freelancer: Address) -> Reputation {
+        reputation::get(&env, &freelancer)
     }
 }
 
