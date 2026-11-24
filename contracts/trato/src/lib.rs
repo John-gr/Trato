@@ -15,8 +15,10 @@ use soroban_sdk::{
 };
 
 mod reputation;
+mod splits;
 
 pub use reputation::Reputation;
+pub use splits::Split;
 
 const DAY_IN_LEDGERS: u32 = 17_280;
 pub(crate) const TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
@@ -40,6 +42,7 @@ pub enum Error {
     SelfDeal = 8,
     DeadlinePassed = 9,
     TooEarly = 10,
+    InvalidSplits = 11,
 }
 
 #[contracttype]
@@ -83,6 +86,8 @@ pub(crate) enum DataKey {
     Deal(u64),
     /// Reputación por dirección de freelancer.
     Rep(Address),
+    /// Reparto del pago entre integrantes del equipo.
+    Splits(u64),
 }
 
 // ---------- Eventos ----------
@@ -288,7 +293,7 @@ impl Trato {
         client.require_auth();
         require_status(&env, &deal, Status::Delivered);
 
-        pay(&env, &deal, &deal.freelancer);
+        splits::pay_out(&env, &deal, deal.amount);
         reputation::record_completed(&env, &deal.freelancer, deal.amount);
         deal.status = Status::Released;
         save(&env, &deal);
@@ -308,7 +313,7 @@ impl Trato {
             panic_with_error!(&env, Error::TooEarly);
         }
 
-        pay(&env, &deal, &deal.freelancer);
+        splits::pay_out(&env, &deal, deal.amount);
         reputation::record_completed(&env, &deal.freelancer, deal.amount);
         deal.status = Status::Released;
         save(&env, &deal);
