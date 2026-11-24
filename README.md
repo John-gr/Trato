@@ -152,11 +152,24 @@ VITE_XLM_ID=CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 
 ---
 
-## Roadmap
+## 🚀 Lo que lanzamos el 27 de noviembre
 
-- Disputas con árbitro elegido por ambas partes.
-- Pagos por hitos (varios entregables en un trato).
+Trato pasa de "un pago, un entregable" a **escrow para freelancers y equipos, por entregas y con
+resolución de conflictos**, todo aplicado por el contrato Soroban:
+
+| Lanzamiento | Qué resuelve | Cómo |
+|---|---|---|
+| **App pública en testnet** | Cualquiera puede probar el flujo completo con su wallet real | App en Vercel + contrato en testnet, flujo verificado con Freighter/Varial |
+| **Pagos por hitos** | Proyectos largos: el cliente no paga todo de golpe y el freelancer cobra por avance | Un trato con varios entregables; cada hito se entrega, aprueba o cobra por timeout por separado |
+| **Disputas con árbitro** | Hoy, si el cliente rechaza la entrega, no hay salida | Árbitro elegido por ambas partes al crear el trato; decide liberar, reembolsar o repartir |
+| **Splits para equipos** | Colectivos y agencias pequeñas que se reparten el pago a mano | Al liberar, el contrato paga a varios integrantes según porcentajes (bps) |
+| **Reputación on-chain** | El cliente no sabe si puede confiar en un freelancer nuevo | Contador de tratos completados y reembolsados por freelancer, visible en el link de pago |
+| **Pagar con cualquier activo** | El cliente no siempre tiene USDC | El cliente paga con XLM u otro activo y el freelancer recibe USDC (path payments / DEX de Soroban) |
+
+## Roadmap (después del lanzamiento)
+
 - On/off-ramp a pesos vía anchors SEP-24.
+- Wallets con passkeys para clientes sin extensión.
 - Notificaciones por email/WhatsApp al cambiar de estado.
 
 ## Herramientas del ecosistema
