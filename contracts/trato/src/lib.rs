@@ -14,6 +14,7 @@ use soroban_sdk::{
     Address, Env, String,
 };
 
+mod disputes;
 mod reputation;
 mod splits;
 
@@ -43,6 +44,9 @@ pub enum Error {
     DeadlinePassed = 9,
     TooEarly = 10,
     InvalidSplits = 11,
+    NoArbiter = 12,
+    ReviewClosed = 13,
+    InvalidShare = 14,
 }
 
 #[contracttype]
@@ -60,6 +64,10 @@ pub enum Status {
     Refunded,
     /// El freelancer canceló antes de recibir fondos.
     Cancelled,
+    /// El cliente abrió una disputa; decide el árbitro.
+    Disputed,
+    /// El árbitro repartió los fondos.
+    Resolved,
 }
 
 #[contracttype]
@@ -88,6 +96,8 @@ pub(crate) enum DataKey {
     Rep(Address),
     /// Reparto del pago entre integrantes del equipo.
     Splits(u64),
+    /// Árbitro aceptado por ambas partes para resolver disputas.
+    Arbiter(u64),
 }
 
 // ---------- Eventos ----------
