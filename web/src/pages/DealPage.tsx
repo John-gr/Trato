@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useWallet } from "../wallet-context";
 import {
@@ -8,18 +8,24 @@ import {
   deliverDeal,
   friendlyError,
   fundDeal,
+  getArbiter,
   getDeal,
+  getSplits,
   parseDealId,
   refundDeal,
   releaseDeal,
   type Deal,
+  type Split,
   type TxResult,
 } from "../lib/trato";
 import { accountUrl, tokenById } from "../lib/config";
 import { formatDate, formatDuration, fromUnits, short, timeLeft } from "../lib/format";
 import { Notice, StatusBadge, TxLink } from "../components";
+import { TeamFacts } from "../deal/TeamFacts";
+import { TeamSetup } from "../deal/TeamSetup";
 
 type Tx = { label: string; hash: string };
+type Team = { arbiter?: string; splits: Split[] };
 
 function useNow() {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
@@ -46,6 +52,8 @@ export default function DealPage() {
   });
   const [evidence, setEvidence] = useState("");
   const [copied, setCopied] = useState(false);
+  const [team, setTeam] = useState<Team | null>(null);
+  const teamLoadedFor = useRef<bigint | null>(null);
 
   const refresh = useCallback(async () => {
     const dealId = parseDealId(id);
@@ -54,7 +62,14 @@ export default function DealPage() {
       return;
     }
     try {
-      setDeal(await getDeal(dealId));
+      const next = await getDeal(dealId);
+      // Árbitro y reparto solo cambian mientras el trato está Open; después basta con leerlos una vez.
+      if (next.status === "Open" || teamLoadedFor.current !== dealId) {
+        const [arbiter, splits] = await Promise.all([getArbiter(dealId), getSplits(dealId)]);
+        setTeam({ arbiter, splits });
+        teamLoadedFor.current = dealId;
+      }
+      setDeal(next);
       setLoadError(null);
     } catch (e) {
       setLoadError(friendlyError(e));
@@ -144,6 +159,7 @@ export default function DealPage() {
           </dd>
           <dt>Revisión del cliente</dt>
           <dd>{formatDuration(Number(deal.review_period))}</dd>
+          {team && <TeamFacts arbiter={team.arbiter} splits={team.splits} address={address} />}
           {deal.evidence && (
             <>
               <dt>Entregable</dt>
@@ -180,6 +196,17 @@ export default function DealPage() {
                 </button>
               </div>
               <p className="muted small">Cuando tu cliente deposite, el pago queda bloqueado a tu favor.</p>
+              {team && (
+                <TeamSetup
+                  key={String(deal.id)}
+                  dealId={deal.id}
+                  freelancer={deal.freelancer}
+                  arbiter={team.arbiter}
+                  splits={team.splits}
+                  busy={busy}
+                  run={run}
+                />
+              )}
               <button
                 className="btn btn-danger-ghost"
                 disabled={!!busy}

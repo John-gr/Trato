@@ -575,3 +575,47 @@ select:focus {
     padding: 18px;
   }
 }
+
+/* ---------- Árbitro y reparto del equipo ---------- */
+.team-setup {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.team-setup summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+.team-setup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.team-setup-body h4 {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+.split-row {
+  display: flex;
+  gap: 8px;
+}
+.split-row .split-percent {
+  flex: 0 0 76px;
+  text-align: right;
+}
+.split-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.split-off {
+  color: var(--danger);
+}
+.split-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
