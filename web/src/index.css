@@ -619,3 +619,13 @@ select:focus {
   display: grid;
   gap: 4px;
 }
+.dispute-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.resolve-preview {
+  margin: 0;
+}

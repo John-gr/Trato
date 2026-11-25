@@ -29,6 +29,12 @@ export function formatBps(bps: number): string {
   return `${whole}.${String(cents).padStart(2, "0").replace(/0$/, "")}`;
 }
 
+/** Cómo reparte `resolve` el monto, igual que el contrato: la parte del freelancer redondea hacia abajo. */
+export function resolutionShares(amount: bigint, freelancerBps: number): { toFreelancer: bigint; toClient: bigint } {
+  const toFreelancer = (amount * BigInt(freelancerBps)) / BigInt(BPS_TOTAL);
+  return { toFreelancer, toClient: amount - toFreelancer };
+}
+
 /** Valida el árbitro propuesto por el freelancer. */
 export function parseArbiter(raw: string, freelancer: string): Parsed<string> {
   const arbiter = raw.trim();

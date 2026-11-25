@@ -23,6 +23,7 @@ import { formatDate, formatDuration, fromUnits, short, timeLeft } from "../lib/f
 import { Notice, StatusBadge, TxLink } from "../components";
 import { TeamFacts } from "../deal/TeamFacts";
 import { TeamSetup } from "../deal/TeamSetup";
+import { OpenDispute, ResolveDispute } from "../deal/DisputePanel";
 
 type Tx = { label: string; hash: string };
 type Team = { arbiter?: string; splits: Split[] };
@@ -89,6 +90,7 @@ export default function DealPage() {
   const amount = `${fromUnits(deal.amount, tok.decimals)} ${tok.symbol}`;
   const isFreelancer = address === deal.freelancer;
   const isClient = !!address && address === deal.client;
+  const isArbiter = !!address && address === team?.arbiter;
   const deliveryDeadline = Number(deal.delivery_deadline);
   const claimAt = Number(deal.delivered_at) + Number(deal.review_period);
   const link = `${window.location.origin}/t/${deal.id}`;
@@ -300,6 +302,7 @@ export default function DealPage() {
                 >
                   {busy ? "Firmando…" : `Aprobar y pagar ${amount}`}
                 </button>
+                {team?.arbiter && now < claimAt && <OpenDispute dealId={deal.id} busy={busy} run={run} />}
               </>
             )}
             {isFreelancer && (
@@ -330,9 +333,20 @@ export default function DealPage() {
         {deal.status === "Released" && <Notice kind="ok">Pago completado: {amount} al freelancer.</Notice>}
         {deal.status === "Refunded" && <Notice kind="info">Reembolsado: {amount} regresaron al cliente.</Notice>}
         {deal.status === "Cancelled" && <Notice kind="info">Este trato fue cancelado.</Notice>}
-        {deal.status === "Disputed" && (
-          <Notice kind="info">El cliente abrió una disputa. El árbitro decide cómo se reparte el pago.</Notice>
-        )}
+        {deal.status === "Disputed" &&
+          (isArbiter ? (
+            <ResolveDispute
+              dealId={deal.id}
+              amount={deal.amount}
+              decimals={tok.decimals}
+              symbol={tok.symbol}
+              hasTeam={(team?.splits.length ?? 0) > 0}
+              busy={busy}
+              run={run}
+            />
+          ) : (
+            <Notice kind="info">El cliente abrió una disputa. El árbitro decide cómo se reparte el pago.</Notice>
+          ))}
         {deal.status === "Resolved" && (
           <Notice kind="info">El árbitro resolvió la disputa y repartió el pago entre las partes.</Notice>
         )}
