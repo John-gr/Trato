@@ -59,19 +59,36 @@ function normalizeDeal(raw: Record<string, unknown>): Deal {
   };
 }
 
-export async function getDeal(id: bigint): Promise<Deal> {
+/** Reparto del pago entre el equipo: bps sobre 10_000 (= 100 %). */
+export type Split = { recipient: string; bps: number };
+
+/** Historial on-chain del freelancer. `volume` está en unidades del token, sin distinguir token. */
+export type Reputation = { completed: number; refunded: number; disputed: number; volume: bigint };
+
+/** Llamada de solo lectura (simulación, sin firma). */
+async function read<T>(method: string, args?: Record<string, unknown>): Promise<T> {
   const c = (await getClient()) as unknown as DynClient;
-  const tx = await c.get({ id });
+  const tx = await c[method](args);
   // En lecturas el SDK no lanza: devuelve un Err sin el código. El código está en la simulación.
   if (tx.simulation && rpc.Api.isSimulationError(tx.simulation)) throw new Error(tx.simulation.error);
-  return normalizeDeal(tx.result as Record<string, unknown>);
+  return tx.result as T;
 }
 
-export async function getCount(): Promise<bigint> {
-  const c = (await getClient()) as unknown as DynClient;
-  const tx = await c.count();
-  return tx.result as bigint;
+export async function getDeal(id: bigint): Promise<Deal> {
+  return normalizeDeal(await read<Record<string, unknown>>("get", { id }));
 }
+
+export const getCount = () => read<bigint>("count");
+
+/** Árbitro del trato, o undefined si no tiene (entonces no admite disputas). */
+export async function getArbiter(id: bigint): Promise<string | undefined> {
+  return (await read<string | null>("arbiter", { id })) ?? undefined;
+}
+
+/** Reparto del equipo; vacío si todo el pago va al freelancer. */
+export const getSplits = (id: bigint) => read<Split[]>("splits", { id });
+
+export const getReputation = (freelancer: string) => read<Reputation>("reputation", { freelancer });
 
 export async function listDeals(): Promise<Deal[]> {
   const count = Number(await getCount());
@@ -120,6 +137,16 @@ export const releaseDeal = (client: string, id: bigint) => invoke<void>(client, 
 export const claimDeal = (freelancer: string, id: bigint) => invoke<void>(freelancer, "claim", { id });
 export const refundDeal = (client: string, id: bigint) => invoke<void>(client, "refund", { id });
 export const cancelDeal = (freelancer: string, id: bigint) => invoke<void>(freelancer, "cancel", { id });
+
+// Árbitro y reparto solo se pueden fijar mientras el trato está Open: el cliente los ve antes de pagar.
+export const setArbiter = (freelancer: string, id: bigint, arbiter: string) =>
+  invoke<void>(freelancer, "set_arbiter", { id, arbiter });
+export const setSplits = (freelancer: string, id: bigint, splits: Split[]) =>
+  invoke<void>(freelancer, "set_splits", { id, splits });
+// El cliente disputa dentro del periodo de revisión; el árbitro manda freelancerBps al freelancer y el resto al cliente.
+export const disputeDeal = (client: string, id: bigint) => invoke<void>(client, "dispute", { id });
+export const resolveDispute = (arbiter: string, id: bigint, freelancerBps: number) =>
+  invoke<void>(arbiter, "resolve", { id, freelancer_bps: freelancerBps });
 
 const CONTRACT_ERRORS: Record<number, string> = {
   1: "Ese trato no existe.",
