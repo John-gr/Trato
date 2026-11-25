@@ -55,6 +55,14 @@ Trato es el escrow sin plataforma intermedia: un link, un contrato inteligente y
 
 Cada paso muestra el link de la transacción en stellar.expert.
 
+### Pago directo con memo (`/pagar`)
+
+Fuera del escrow, `/pagar` manda un pago clásico de XLM con memo de texto opcional, firmado con tu wallet.
+
+- **Destino:** una dirección `G…` válida que no sea la tuya y que ya exista en la red.
+- **Monto:** con punto decimal y hasta 7 decimales (ej. `1.5`).
+- **Memo:** hasta 28 bytes en UTF-8 (un acento ocupa 2). Sirve para referencias o códigos de pago.
+
 > Para obtener XLM de testnet usa [Friendbot](https://lab.stellar.org/account/fund). Para USDC de testnet,
 > agrega la trustline de USDC (emisor `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) en tu wallet
 > y usa el [faucet de Circle](https://faucet.circle.com/) (red Stellar).
