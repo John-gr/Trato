@@ -47,6 +47,7 @@ pub enum Error {
     NoArbiter = 12,
     ReviewClosed = 13,
     InvalidShare = 14,
+    ArbiterIsClient = 15,
 }
 
 #[contracttype]
@@ -259,6 +260,10 @@ impl Trato {
         require_status(&env, &deal, Status::Open);
         if client == deal.freelancer {
             panic_with_error!(&env, Error::SelfDeal);
+        }
+        // Quien resuelve las disputas no puede ser también quien paga.
+        if disputes::arbiter_of(&env, id).as_ref() == Some(&client) {
+            panic_with_error!(&env, Error::ArbiterIsClient);
         }
         if env.ledger().timestamp() >= deal.delivery_deadline {
             panic_with_error!(&env, Error::DeadlinePassed);

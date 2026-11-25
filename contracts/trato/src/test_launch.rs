@@ -138,7 +138,7 @@ fn splits_must_sum_100_percent() {
             Split { recipient: other, bps: 3_000 },
         ],
     );
-    assert_eq!(res, Err(Ok(Error::InvalidSplits)));
+    assert_eq!(res, Err(Ok(Error::InvalidSplits.into())));
 }
 
 #[test]
@@ -150,7 +150,24 @@ fn splits_locked_after_funding() {
         &id,
         &vec![&s.env, Split { recipient: s.freelancer.clone(), bps: 10_000 }],
     );
-    assert_eq!(res, Err(Ok(Error::WrongStatus)));
+    assert_eq!(res, Err(Ok(Error::WrongStatus.into())));
+}
+
+#[test]
+fn splits_reject_member_over_100_percent_even_if_sum_wraps() {
+    let s = setup();
+    let id = create(&s);
+    let other = Address::generate(&s.env);
+    // u32::MAX + 10_001 da la vuelta a exactamente 10_000 si no se valida cada integrante.
+    let res = s.trato.try_set_splits(
+        &id,
+        &vec![
+            &s.env,
+            Split { recipient: s.freelancer.clone(), bps: u32::MAX },
+            Split { recipient: other, bps: 10_001 },
+        ],
+    );
+    assert_eq!(res, Err(Ok(Error::InvalidSplits.into())));
 }
 
 // ---------- Disputas ----------
@@ -179,12 +196,26 @@ fn arbiter_splits_disputed_funds() {
 }
 
 #[test]
+fn arbiter_cannot_fund_as_client() {
+    let s = setup();
+    let arbiter = Address::generate(&s.env);
+    StellarAssetClient::new(&s.env, &s.token.address).mint(&arbiter, &AMOUNT);
+    let id = create(&s);
+    s.trato.set_arbiter(&id, &arbiter);
+    assert_eq!(
+        s.trato.try_fund(&id, &arbiter),
+        Err(Ok(Error::ArbiterIsClient.into()))
+    );
+    assert_eq!(s.token.balance(&arbiter), AMOUNT);
+}
+
+#[test]
 fn dispute_requires_arbiter() {
     let s = setup();
     let id = create(&s);
     s.trato.fund(&id, &s.client);
     deliver(&s, id);
-    assert_eq!(s.trato.try_dispute(&id), Err(Ok(Error::NoArbiter)));
+    assert_eq!(s.trato.try_dispute(&id), Err(Ok(Error::NoArbiter.into())));
 }
 
 #[test]
@@ -195,7 +226,10 @@ fn dispute_closed_after_review_period() {
     s.trato.fund(&id, &s.client);
     deliver(&s, id);
     advance(&s.env, 3 * DAY);
-    assert_eq!(s.trato.try_dispute(&id), Err(Ok(Error::ReviewClosed)));
+    assert_eq!(
+        s.trato.try_dispute(&id),
+        Err(Ok(Error::ReviewClosed.into()))
+    );
     // El freelancer ya puede cobrar por timeout.
     s.trato.claim(&id);
 }
@@ -208,5 +242,8 @@ fn resolve_rejects_share_over_100_percent() {
     s.trato.fund(&id, &s.client);
     deliver(&s, id);
     s.trato.dispute(&id);
-    assert_eq!(s.trato.try_resolve(&id, &10_001), Err(Ok(Error::InvalidShare)));
+    assert_eq!(
+        s.trato.try_resolve(&id, &10_001),
+        Err(Ok(Error::InvalidShare.into()))
+    );
 }

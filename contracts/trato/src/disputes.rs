@@ -9,7 +9,7 @@ use soroban_sdk::{contractevent, contractimpl, panic_with_error, token, Address,
 
 use crate::{
     client_of, load, reputation, require_status, save, splits, DataKey, Error, Status, Trato,
-    TTL_EXTEND_TO, TTL_THRESHOLD,
+    TratoArgs, TratoClient, TTL_EXTEND_TO, TTL_THRESHOLD,
 };
 
 use crate::splits::BPS_TOTAL;
@@ -37,7 +37,7 @@ pub struct DealResolved {
     pub freelancer_bps: u32,
 }
 
-fn arbiter_of(env: &Env, id: u64) -> Option<Address> {
+pub(crate) fn arbiter_of(env: &Env, id: u64) -> Option<Address> {
     let key = DataKey::Arbiter(id);
     let arbiter: Option<Address> = env.storage().persistent().get(&key);
     if arbiter.is_some() {

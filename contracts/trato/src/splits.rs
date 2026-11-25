@@ -6,7 +6,10 @@
 
 use soroban_sdk::{contractevent, contractimpl, contracttype, panic_with_error, token, Address, Env, Vec};
 
-use crate::{load, require_status, DataKey, Deal, Error, Status, Trato, TTL_EXTEND_TO, TTL_THRESHOLD};
+use crate::{
+    load, require_status, DataKey, Deal, Error, Status, Trato, TratoArgs, TratoClient,
+    TTL_EXTEND_TO, TTL_THRESHOLD,
+};
 
 pub const BPS_TOTAL: u32 = 10_000;
 pub const MAX_SPLITS: u32 = 10;
@@ -32,7 +35,9 @@ fn validate(env: &Env, splits: &Vec<Split>) {
     }
     let mut total: u32 = 0;
     for s in splits.iter() {
-        if s.bps == 0 {
+        // Acotar cada integrante impide que la suma dé la vuelta: como mucho
+        // MAX_SPLITS * BPS_TOTAL = 100_000, que cabe en u32.
+        if s.bps == 0 || s.bps > BPS_TOTAL {
             panic_with_error!(env, Error::InvalidSplits);
         }
         total += s.bps;
