@@ -13,6 +13,9 @@ export function Header() {
         <span>Trato</span>
       </Link>
       <nav className="nav">
+        <Link to="/pagar" className="nav-link">
+          Pagar
+        </Link>
         <Link to="/nuevo" className="nav-link">
           Crear trato
         </Link>

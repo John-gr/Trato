@@ -4,6 +4,7 @@ import { Header } from "./components";
 import Home from "./pages/Home";
 import NewDeal from "./pages/NewDeal";
 import DealPage from "./pages/DealPage";
+import PayPage from "./pages/PayPage";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/nuevo" element={<NewDeal />} />
             <Route path="/t/:id" element={<DealPage />} />
+            <Route path="/pagar" element={<PayPage />} />
             <Route path="*" element={<p className="muted center">Página no encontrada.</p>} />
           </Routes>
         </main>
