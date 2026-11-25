@@ -24,6 +24,7 @@ import { Notice, StatusBadge, TxLink } from "../components";
 import { TeamFacts } from "../deal/TeamFacts";
 import { TeamSetup } from "../deal/TeamSetup";
 import { OpenDispute, ResolveDispute } from "../deal/DisputePanel";
+import { FreelancerReputation } from "../deal/FreelancerReputation";
 
 type Tx = { label: string; hash: string };
 type Team = { arbiter?: string; splits: Split[] };
@@ -179,6 +180,7 @@ export default function DealPage() {
         </dl>
 
         <Timeline deal={deal} />
+        <FreelancerReputation freelancer={deal.freelancer} />
       </section>
 
       <aside className="card action-card">
