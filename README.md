@@ -172,9 +172,20 @@ compilas para mainnet con un RPC de testnet, la app se detiene al arrancar con u
 | Trato #1 con árbitro asignado | [200f85…](https://stellar.expert/explorer/testnet/tx/200f856b0bf428bd28d38cbd044197b2f8047f5e84a9f049dbd75c7beab8b565) |
 | Trato #1 disputado por el cliente | [282781…](https://stellar.expert/explorer/testnet/tx/282781faa59a4d7e86d8bb01399e7edf059b4776f3c561ed4a97592201d6618f) |
 | Trato #1 resuelto por el árbitro (70 % al freelancer, 30 % al cliente) | [66aed8…](https://stellar.expert/explorer/testnet/tx/66aed86ab566d1d85e87f44cd458b4936d832253b9b2f7872777f4020f6b55ce) |
+| Trato #12 creado (10 XLM) | [99a424…](https://stellar.expert/explorer/testnet/tx/99a4248528970fde31de754fc8c84f55c6aab2bfe8b58e02258a96358669845c) |
+| Trato #12 con árbitro asignado | [0fbfe9…](https://stellar.expert/explorer/testnet/tx/0fbfe9a54e224acf89dba9c4ced5635f629ebd5c12d1d4a1b1fd9f13925b6433) |
+| Trato #12 con reparto del equipo (70 % freelancer, 30 % integrante) | [452e5e…](https://stellar.expert/explorer/testnet/tx/452e5e3dd358903357f5433627694a2a18f130313ef56dc55cd736ababdcdb95) |
+| Trato #12 fondeado por el cliente | [7c2aed…](https://stellar.expert/explorer/testnet/tx/7c2aed2a10ea2bd89135cf5e26d6f38e95b638ed9838296e64399bb779a329fe) |
+| Trato #12 entregado | [348960…](https://stellar.expert/explorer/testnet/tx/348960a5da39cf85cc4b36e77490629622eb356c43576f2e94d5eaec178d71d9) |
+| Trato #12 disputado por el cliente | [795d0f…](https://stellar.expert/explorer/testnet/tx/795d0fb2dd868d564363ab8ede3ab4d3e3e6368c89d6c52820441e9378b2bd72) |
+| Trato #12 resuelto por el árbitro (60 % al lado del freelancer, 40 % al cliente) | [3b09ae…](https://stellar.expert/explorer/testnet/tx/3b09ae52d280a91df465efaf49eb81f991b32a80ffc470f301e2c1faf823d7fd) |
 
 En el trato #2 el árbitro intentó depositar como cliente y el contrato lo rechazó (`Error(Contract, #15)`).
 Después de los dos tratos, `reputation` del freelancer marca 2 completados, 1 disputa y 32 XLM de volumen.
+
+El trato #12 recorre todas las funciones nuevas de punta a punta: la resolución mandó 6 XLM al lado del
+freelancer y el reparto los dividió en 4.2 XLM para el freelancer y 1.8 XLM exactos para el integrante del
+equipo; los otros 4 XLM regresaron al cliente. Se puede ver en la app en `/t/12`.
 
 ---
 
