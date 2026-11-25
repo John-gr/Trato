@@ -42,7 +42,7 @@ Trato es el escrow sin plataforma intermedia: un link, un contrato inteligente y
 |---|---|
 | **Contrato** | `CDPC4FALI7CWB66RNGZMB72J2G2N5VLLEADKA45M3RGSFIDEJTTPMSYP` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CDPC4FALI7CWB66RNGZMB72J2G2N5VLLEADKA45M3RGSFIDEJTTPMSYP)) |
 | **Red** | Stellar Testnet |
-| **App** | `APP_URL_PLACEHOLDER` |
+| **App** | [trato-webapp.vercel.app](https://trato-webapp.vercel.app/) |
 
 ### Flujo de demo (≈2 min)
 
