@@ -133,6 +133,7 @@ cd web
 cp .env.example .env             # pon el CONTRACT_ID
 npm install
 npm run dev
+npm test                         # validación de pagos, reparto y disputas (node --test, Node 22.18+)
 ```
 
 Variables (`web/.env`):
