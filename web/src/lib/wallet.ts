@@ -8,7 +8,7 @@ export function initWallets() {
   if (initialized) return;
   StellarWalletsKit.init({
     modules: defaultModules(),
-    network: Networks.TESTNET,
+    network: CONFIG.isTestnet ? Networks.TESTNET : Networks.PUBLIC,
   });
   initialized = true;
 }

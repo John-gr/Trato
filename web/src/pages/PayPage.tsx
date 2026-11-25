@@ -3,6 +3,7 @@ import { useWallet } from "../wallet-context";
 import { friendlyError } from "../lib/trato";
 import { MEMO_MAX_BYTES, memoBytes, parsePaymentInput } from "../lib/payment-input";
 import { sendPayment } from "../lib/payment";
+import { CONFIG } from "../lib/config";
 import { Notice, TxLink } from "../components";
 
 type SentPayment = { hash: string; amount: string; memo: string };
@@ -45,7 +46,7 @@ export default function PayPage() {
     <section className="card narrow">
       <h2>Pago con memo</h2>
       <p className="muted">
-        Envía XLM de testnet desde tu wallet a otra cuenta, con un memo de texto: el código de un reto o la
+        Envía XLM ({CONFIG.networkLabel}) desde tu wallet a otra cuenta, con un memo de texto: el código de un reto o la
         referencia de una factura. Es un pago directo, sin escrow.
       </p>
       <form onSubmit={submit} className="form">

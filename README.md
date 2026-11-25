@@ -138,11 +138,17 @@ npm run dev
 Variables (`web/.env`):
 
 ```
+VITE_NETWORK=testnet
 VITE_CONTRACT_ID=C...
 VITE_RPC_URL=https://soroban-testnet.stellar.org
 VITE_USDC_ID=CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
 VITE_XLM_ID=CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 ```
+
+`VITE_NETWORK` elige la red al compilar: `testnet` (por defecto) o `mainnet`. Con ella cambian la passphrase
+de las firmas, el explorador (stellar.expert) y los textos de la app. `VITE_RPC_URL` es opcional: si falta,
+se usa `https://soroban-testnet.stellar.org` en testnet y `https://mainnet.sorobanrpc.com` en mainnet. Si
+compilas para mainnet con un RPC de testnet, la app se detiene al arrancar con un error que lo explica.
 
 ---
 

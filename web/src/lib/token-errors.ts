@@ -2,7 +2,8 @@ import { contract, humanizeEvents, rpc } from "@stellar/stellar-sdk";
 
 // Códigos del Stellar Asset Contract (USDC, XLM) que pueden salir al mover fondos.
 const TOKEN_ERRORS: Record<number, string> = {
-  6: "Una de las cuentas no existe en la red. En testnet, fondéala con Friendbot.",
+  // Sin el aviso de Friendbot: este archivo no importa la config para poder correrlo en Node.
+  6: "Una de las cuentas no existe en la red: primero tiene que recibir XLM.",
   10: "Saldo insuficiente del token.",
   11: "El emisor del token congeló el saldo de una de las cuentas.",
   13: "Una de las cuentas no tiene trustline para este token. Agrégala desde la wallet.",

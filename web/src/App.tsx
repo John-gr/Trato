@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { WalletProvider } from "./wallet-context";
 import { Header } from "./components";
+import { CONFIG } from "./lib/config";
 import Home from "./pages/Home";
 import NewDeal from "./pages/NewDeal";
 import DealPage from "./pages/DealPage";
@@ -21,7 +22,7 @@ export default function App() {
           </Routes>
         </main>
         <footer className="footer muted small">
-          Trato · Stellar Testnet · Los fondos los custodia un contrato Soroban, no nosotros.
+          Trato · Stellar {CONFIG.networkLabel} · Los fondos los custodia un contrato Soroban, no nosotros.
         </footer>
       </BrowserRouter>
     </WalletProvider>

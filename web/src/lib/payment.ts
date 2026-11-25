@@ -10,7 +10,7 @@ const POLL_ATTEMPTS = 60;
 
 const RESULT_MESSAGES: Record<string, string> = {
   paymentUnderfunded: "Saldo insuficiente para este pago.",
-  paymentNoDestination: "La cuenta destino no existe en testnet.",
+  paymentNoDestination: `La cuenta destino no existe en ${CONFIG.networkLabel}.`,
   paymentLineFull: "La cuenta destino no puede recibir más de este activo.",
   txBadSeq: "Tu cuenta envió otra transacción al mismo tiempo. Intenta de nuevo.",
   txInsufficientBalance: "No te alcanza para la comisión de la red.",
@@ -57,11 +57,12 @@ async function loadAccount(server: rpc.Server, address: string, missingMessage: 
 /** Envía un pago de XLM con memo de texto, firmado por la wallet de `from`. Devuelve el hash. */
 export async function sendPayment(from: string, req: PaymentRequest): Promise<string> {
   const server = new rpc.Server(CONFIG.rpcUrl);
-  const source = await loadAccount(server, from, "Tu cuenta no existe en testnet. Fondéala con Friendbot.");
+  const network = CONFIG.networkLabel;
+  const source = await loadAccount(server, from, `Tu cuenta no existe en ${network}. ${CONFIG.activateHint}`);
   await loadAccount(
     server,
     req.destination,
-    "La cuenta destino no existe en testnet. Tiene que recibir XLM de Friendbot antes de que le pagues.",
+    `La cuenta destino no existe en ${network}. ${CONFIG.activateHint} Después ya puedes pagarle.`,
   );
 
   const tx = new TransactionBuilder(source, { fee: BASE_FEE, networkPassphrase: CONFIG.networkPassphrase })
