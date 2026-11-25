@@ -40,7 +40,7 @@ Trato es el escrow sin plataforma intermedia: un link, un contrato inteligente y
 
 | | |
 |---|---|
-| **Contrato** | `CDC7UJLZ5ERDMJQB3GQUNEJOYO3CXVVYQHGFNWCBUOLCUT22T3CBJUZU` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CDC7UJLZ5ERDMJQB3GQUNEJOYO3CXVVYQHGFNWCBUOLCUT22T3CBJUZU)) |
+| **Contrato** | `CDPC4FALI7CWB66RNGZMB72J2G2N5VLLEADKA45M3RGSFIDEJTTPMSYP` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CDPC4FALI7CWB66RNGZMB72J2G2N5VLLEADKA45M3RGSFIDEJTTPMSYP)) |
 | **Red** | Stellar Testnet |
 | **App** | `APP_URL_PLACEHOLDER` |
 
@@ -66,7 +66,7 @@ Cada paso muestra el link de la transacción en stellar.expert.
 ```
  Navegador (React + Vite)
    │  Stellar Wallets Kit ── firma ──► Wallet del usuario
-   │  stellar-sdk contract.Client (spec leída on-chain)
+   │  stellar-sdk contract.Client (spec del contrato incrustado en web/src/lib/spec.ts)
    ▼
  Soroban RPC (testnet) ──► Contrato Trato ──► Token SAC (USDC / XLM)
 ```
@@ -84,15 +84,21 @@ Sin backend ni base de datos: el estado de cada trato se lee directamente del co
 | `claim(id)` | Freelancer | Cobra si venció el periodo de revisión (`Released`) |
 | `refund(id)` | Cliente | Recupera fondos si no hubo entrega a tiempo (`Refunded`) |
 | `cancel(id)` | Freelancer | Cancela si nadie ha pagado (`Cancelled`) |
-| `get(id)`, `count()` | Cualquiera | Lectura |
+| `set_arbiter(id, arbiter)` | Freelancer | Propone un árbitro mientras el trato está `Open`; el cliente lo acepta al depositar (no puede ser el árbitro) |
+| `set_splits(id, splits)` | Freelancer | Reparte el pago entre su equipo en bps (deben sumar 10 000, máx. 10 integrantes) mientras el trato está `Open` |
+| `dispute(id)` | Cliente | Rechaza la entrega dentro del periodo de revisión; decide el árbitro (`Disputed`) |
+| `resolve(id, freelancer_bps)` | Árbitro | Envía `freelancer_bps` al freelancer (o a su equipo) y el resto al cliente (`Resolved`) |
+| `get(id)`, `count()`, `arbiter(id)`, `splits(id)`, `reputation(freelancer)` | Cualquiera | Lectura |
 
 ```
 Open ──fund──► Funded ──deliver──► Delivered ──release / claim──► Released
+  │                │                   └──dispute──► Disputed ──resolve──► Resolved
   │                └──refund (deadline vencido)──► Refunded
   └──cancel──► Cancelled
 ```
 
-Eventos: `DealCreated`, `DealFunded`, `DealDelivered`, `DealReleased{by_timeout}`, `DealRefunded`, `DealCancelled`.
+Eventos: `DealCreated`, `DealFunded`, `DealDelivered`, `DealReleased{by_timeout}`, `DealRefunded`, `DealCancelled`,
+`ArbiterSet`, `SplitsSet`, `DealDisputed`, `DealResolved{freelancer_bps}`.
 
 ---
 
@@ -144,11 +150,16 @@ VITE_XLM_ID=CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 
 | Prueba | Tx |
 |---|---|
-| Deploy del contrato | [bf02e6…](https://stellar.expert/explorer/testnet/tx/bf02e681020c37fb7b5074d119bb7d6a6890271c396fdeda413368fbb755ef1a) |
-| Trato #0 fondeado (25 XLM bloqueados) | [1bf0c2…](https://stellar.expert/explorer/testnet/tx/1bf0c25107009c038ef141b2db879f6abee1882c3b3855e2e7ffe8d9a174087d) |
-| Trato #0 entregado | [a38027…](https://stellar.expert/explorer/testnet/tx/a38027d7ddc1a422060a71ecd48e7bd93aae4576b4cd33d25a69a941add4e209) |
-| Trato #0 liberado por el cliente | [f41ea6…](https://stellar.expert/explorer/testnet/tx/f41ea63bb20a690193bdccf5e9c3c357276807d0771663c793245149205b3abf) |
-| Trato #1 cobrado por el freelancer tras timeout (`by_timeout: true`) | [f57f95…](https://stellar.expert/explorer/testnet/tx/f57f95adabc0f6dbe4c2b4f01e6bf330b0cb1af1b4181558267ee68bc83204a2) |
+| Deploy del contrato | [fda20f…](https://stellar.expert/explorer/testnet/tx/fda20f2b8f90d97a01425e6f681df7dabe06f5d3c522252cd8f65784790da492) |
+| Trato #0 fondeado (25 XLM bloqueados) | [0971ef…](https://stellar.expert/explorer/testnet/tx/0971efe8b6740bcb99f42a2392d8507c7128dad06d94d9e42cde8e9e693cb737) |
+| Trato #0 entregado | [042380…](https://stellar.expert/explorer/testnet/tx/0423807d7a7dcc317ec74d5fd7a64f8f7f72e8390ac329f507cab7a4ca92d059) |
+| Trato #0 liberado por el cliente | [61b3ad…](https://stellar.expert/explorer/testnet/tx/61b3ad62ba2834e92a0711ec9051f1f5957d966e95afcebb9a08574de4de7717) |
+| Trato #1 con árbitro asignado | [200f85…](https://stellar.expert/explorer/testnet/tx/200f856b0bf428bd28d38cbd044197b2f8047f5e84a9f049dbd75c7beab8b565) |
+| Trato #1 disputado por el cliente | [282781…](https://stellar.expert/explorer/testnet/tx/282781faa59a4d7e86d8bb01399e7edf059b4776f3c561ed4a97592201d6618f) |
+| Trato #1 resuelto por el árbitro (70 % al freelancer, 30 % al cliente) | [66aed8…](https://stellar.expert/explorer/testnet/tx/66aed86ab566d1d85e87f44cd458b4936d832253b9b2f7872777f4020f6b55ce) |
+
+En el trato #2 el árbitro intentó depositar como cliente y el contrato lo rechazó (`Error(Contract, #15)`).
+Después de los dos tratos, `reputation` del freelancer marca 2 completados, 1 disputa y 32 XLM de volumen.
 
 ---
 
