@@ -1,9 +1,18 @@
-import { contract } from "@stellar/stellar-sdk";
+import { contract, rpc } from "@stellar/stellar-sdk";
 import { CONFIG } from "./config";
 import { signTx } from "./wallet";
 import { TRATO_SPEC } from "./spec";
+import { TokenError, tokenErrorFrom } from "./token-errors";
 
-export type StatusTag = "Open" | "Funded" | "Delivered" | "Released" | "Refunded" | "Cancelled";
+export type StatusTag =
+  | "Open"
+  | "Funded"
+  | "Delivered"
+  | "Released"
+  | "Refunded"
+  | "Cancelled"
+  | "Disputed"
+  | "Resolved";
 
 export type Deal = {
   id: bigint;
@@ -53,6 +62,8 @@ function normalizeDeal(raw: Record<string, unknown>): Deal {
 export async function getDeal(id: bigint): Promise<Deal> {
   const c = (await getClient()) as unknown as DynClient;
   const tx = await c.get({ id });
+  // En lecturas el SDK no lanza: devuelve un Err sin el código. El código está en la simulación.
+  if (tx.simulation && rpc.Api.isSimulationError(tx.simulation)) throw new Error(tx.simulation.error);
   return normalizeDeal(tx.result as Record<string, unknown>);
 }
 
@@ -78,6 +89,9 @@ async function invoke<T>(
 ): Promise<TxResult<T>> {
   const c = (await getClient(publicKey)) as unknown as DynClient;
   const tx = await c[method](args);
+  // Si falló el token (saldo, trustline), avisarlo antes de pedir la firma.
+  const tokenError = tokenErrorFrom(tx, CONFIG.contractId);
+  if (tokenError) throw tokenError;
   const sent = await tx.signAndSend();
   const hash =
     sent.sendTransactionResponse?.hash ??
@@ -118,9 +132,25 @@ const CONTRACT_ERRORS: Record<number, string> = {
   8: "No puedes pagar tu propio trato.",
   9: "La fecha límite de entrega ya pasó.",
   10: "Todavía no se puede: falta que venza el plazo.",
+  11: "El reparto del equipo debe sumar 100 %, con hasta 10 integrantes y ninguno en 0 %.",
+  12: "Este trato no tiene árbitro, así que no admite disputas.",
+  13: "El periodo de revisión ya terminó: ya no se puede abrir una disputa.",
+  14: "El reparto del árbitro no puede pasar de 100 %.",
+  15: "El árbitro del trato no puede ser quien paga.",
 };
 
+export const DEAL_NOT_FOUND = CONTRACT_ERRORS[1];
+const U64_MAX = 18_446_744_073_709_551_615n;
+
+/** Id del trato a partir de la URL, o null si no puede ser un u64. */
+export function parseDealId(raw: string): bigint | null {
+  if (!/^\d+$/.test(raw)) return null;
+  const id = BigInt(raw);
+  return id <= U64_MAX ? id : null;
+}
+
 export function friendlyError(e: unknown): string {
+  if (e instanceof TokenError) return e.message;
   // Stellar Wallets Kit lanza objetos { code, message }, no instancias de Error.
   const msg =
     e instanceof Error

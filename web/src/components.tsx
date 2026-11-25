@@ -37,6 +37,8 @@ const STATUS_LABEL: Record<StatusTag, string> = {
   Released: "Pagado",
   Refunded: "Reembolsado",
   Cancelled: "Cancelado",
+  Disputed: "En disputa",
+  Resolved: "Resuelto",
 };
 
 export function StatusBadge({ status }: { status: StatusTag }) {

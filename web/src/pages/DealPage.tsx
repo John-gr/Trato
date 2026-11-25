@@ -4,10 +4,12 @@ import { useWallet } from "../wallet-context";
 import {
   cancelDeal,
   claimDeal,
+  DEAL_NOT_FOUND,
   deliverDeal,
   friendlyError,
   fundDeal,
   getDeal,
+  parseDealId,
   refundDeal,
   releaseDeal,
   type Deal,
@@ -46,8 +48,13 @@ export default function DealPage() {
   const [copied, setCopied] = useState(false);
 
   const refresh = useCallback(async () => {
+    const dealId = parseDealId(id);
+    if (dealId === null) {
+      setLoadError(DEAL_NOT_FOUND);
+      return;
+    }
     try {
-      setDeal(await getDeal(BigInt(id)));
+      setDeal(await getDeal(dealId));
       setLoadError(null);
     } catch (e) {
       setLoadError(friendlyError(e));
@@ -296,6 +303,12 @@ export default function DealPage() {
         {deal.status === "Released" && <Notice kind="ok">Pago completado: {amount} al freelancer.</Notice>}
         {deal.status === "Refunded" && <Notice kind="info">Reembolsado: {amount} regresaron al cliente.</Notice>}
         {deal.status === "Cancelled" && <Notice kind="info">Este trato fue cancelado.</Notice>}
+        {deal.status === "Disputed" && (
+          <Notice kind="info">El cliente abrió una disputa. El árbitro decide cómo se reparte el pago.</Notice>
+        )}
+        {deal.status === "Resolved" && (
+          <Notice kind="info">El árbitro resolvió la disputa y repartió el pago entre las partes.</Notice>
+        )}
 
         {!address && deal.status !== "Open" && (
           <button className="btn btn-ghost mt" onClick={connect}>
@@ -333,6 +346,17 @@ function Timeline({ deal }: { deal: Deal }) {
         <li className="done">Creado</li>
         {deal.status === "Refunded" && <li className="done">Pago bloqueado</li>}
         <li className="done alt">{deal.status === "Refunded" ? "Reembolsado" : "Cancelado"}</li>
+      </ol>
+    );
+  }
+  if (deal.status === "Disputed" || deal.status === "Resolved") {
+    return (
+      <ol className="timeline">
+        <li className="done">Creado</li>
+        <li className="done">Pago bloqueado</li>
+        <li className="done">Entregado</li>
+        <li className="done alt">En disputa</li>
+        <li className={deal.status === "Resolved" ? "done" : ""}>Resuelto por el árbitro</li>
       </ol>
     );
   }

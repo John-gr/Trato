@@ -334,9 +334,14 @@ a {
   background: var(--warn-soft);
   color: var(--warn);
 }
-.badge-released {
+.badge-released,
+.badge-resolved {
   background: var(--accent-soft);
   color: var(--accent);
+}
+.badge-disputed {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
 }
 
 /* ---------- Form ---------- */
