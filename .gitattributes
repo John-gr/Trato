@@ -1,0 +1,2 @@
+# Los scripts de shell se corren en WSL/Linux: con CRLF fallan (`set -o pipefail\r`).
+*.sh text eol=lf
