@@ -159,6 +159,12 @@ compilas para mainnet con un RPC de testnet, la app se detiene al arrancar con u
 2. Agrega las variables `VITE_*` de arriba en *Environment Variables*.
 3. Deploy. `web/vercel.json` ya redirige todas las rutas a `index.html` para que funcionen los links `/t/<id>`.
 
+### Deploy a mainnet
+
+`SOURCE=<alias de stellar keys> ./scripts/deploy-mainnet.sh` corre los tests, despliega el contrato,
+comprueba que responde e imprime las variables `VITE_*` de mainnet. La guía completa (cuenta, pruebas con
+montos chicos y cambio de la app) está en [`docs/mainnet.md`](docs/mainnet.md).
+
 ---
 
 ## Verificado en testnet
