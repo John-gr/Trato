@@ -116,3 +116,88 @@ fn deliver_fails_one_second_after_deadline() {
     );
     assert_eq!(s.trato.get(&id).status, Status::Funded);
 }
+
+// refund: now > delivery_deadline
+
+#[test]
+fn refund_fails_at_exact_deadline() {
+    let s = setup();
+    let id = create(&s);
+    s.trato.fund(&id, &s.client);
+    at(&s.env, DEADLINE);
+    assert_eq!(s.trato.try_refund(&id), Err(Ok(Error::TooEarly.into())));
+    assert_eq!(s.token.balance(&s.trato.address), AMOUNT);
+}
+
+#[test]
+fn refund_works_one_second_after_deadline() {
+    let s = setup();
+    let id = create(&s);
+    s.trato.fund(&id, &s.client);
+    at(&s.env, DEADLINE + 1);
+    s.trato.refund(&id);
+    assert_eq!(s.trato.get(&id).status, Status::Refunded);
+    assert_eq!(s.token.balance(&s.client), AMOUNT * 2);
+}
+
+/// Trato fondeado y entregado en `START`, así que la revisión cierra en `START + REVIEW`.
+fn delivered(s: &Setup) -> u64 {
+    let id = create(s);
+    s.trato.fund(&id, &s.client);
+    s.trato.deliver(&id, &proof(s));
+    id
+}
+
+// claim: now >= delivered_at + review_period
+
+#[test]
+fn claim_fails_one_second_before_review_ends() {
+    let s = setup();
+    let id = delivered(&s);
+    at(&s.env, START + REVIEW - 1);
+    assert_eq!(s.trato.try_claim(&id), Err(Ok(Error::TooEarly.into())));
+    assert_eq!(s.token.balance(&s.freelancer), 0);
+}
+
+#[test]
+fn claim_works_at_exact_review_end() {
+    let s = setup();
+    let id = delivered(&s);
+    at(&s.env, START + REVIEW);
+    s.trato.claim(&id);
+    assert_eq!(s.trato.get(&id).status, Status::Released);
+    assert_eq!(s.token.balance(&s.freelancer), AMOUNT);
+}
+
+// dispute: now < delivered_at + review_period
+
+fn delivered_with_arbiter(s: &Setup) -> u64 {
+    let id = create(s);
+    s.trato.set_arbiter(&id, &Address::generate(&s.env));
+    s.trato.fund(&id, &s.client);
+    s.trato.deliver(&id, &proof(s));
+    id
+}
+
+#[test]
+fn dispute_works_one_second_before_review_ends() {
+    let s = setup();
+    let id = delivered_with_arbiter(&s);
+    at(&s.env, START + REVIEW - 1);
+    s.trato.dispute(&id);
+    assert_eq!(s.trato.get(&id).status, Status::Disputed);
+}
+
+#[test]
+fn dispute_fails_at_exact_review_end() {
+    let s = setup();
+    let id = delivered_with_arbiter(&s);
+    at(&s.env, START + REVIEW);
+    assert_eq!(
+        s.trato.try_dispute(&id),
+        Err(Ok(Error::ReviewClosed.into()))
+    );
+    // En ese mismo segundo el freelancer ya puede cobrar: las dos reglas no se enciman.
+    s.trato.claim(&id);
+    assert_eq!(s.trato.get(&id).status, Status::Released);
+}
